@@ -3,7 +3,7 @@ from pathlib import Path
 
 def filter_content(content, *, ext='mp4'):
     for q in content:
-        if q.get('stream_url').endwith(ext):
+        if q.get('stream_url').endswith(ext):
             return q 
 
 def download(session, url, headers, size, path_to_file, *, use_tqdm, bar):
@@ -31,13 +31,16 @@ def cli_download(session, content, identifier, quiet_mode):
             "Full content fetch was: %s" % (identifier, content))
         return
     
-    with session.head(downloadable.get('stream_url'), headers=downloadable.get('headers') or {}) as head_response:
+    with session.head(downloadable.get('stream_url'), allow_redirects=True, headers=downloadable.get('headers') or {}) as head_response:
         content_length = int(head_response.headers.get('content-length') or 0)
     
-    Path('./{slug}'.format(slug=identifier)).mkdir(exist_ok=True)
+    folder = Path('./{folder}/{name}'.format(folder=identifier, name=downloadable.get('slug')))
+    folder.mkdir(exist_ok=True)
+
+    name = 'S%sE%s - %s.mp4' % (downloadable.get('season', '0').zfill(2), downloadable.get('episode', '0').zfill(2), downloadable.get('title', 'movie'))
     
     t = None
     if not quiet_mode:
-        t = tqdm(desc='Downloading %s.mp4' % downloadable.get('title', 'movie'), unit_scale=True, unit='B', total=content_length)
+        t = tqdm(desc='Downloading %s' % name , unit_scale=True, unit='B', total=content_length)
     
-    return download(session, downloadable.get('stream_url'), downloadable.get('headers') or {}), content_length, Path("./{slug}/%s.mp4").format(slug=identifier, en=downloadable.get('title', 'movie'), use_tqdm=(not quiet_mode), bar=t)
+    return download(session, downloadable.get('stream_url'), downloadable.get('headers') or {}, content_length, Path(folder, name), use_tqdm=(not quiet_mode), bar=t)

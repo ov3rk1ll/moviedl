@@ -30,7 +30,7 @@ def get_from_player(session, player_hash):
     with session.get(HASH_RESOLVER_AJAX, params={'id': player_hash}) as response:
         real_url = decode(response.json().get('url', ''))
 
-    for player, data in PLAYER_RESOLVER.items():
+    for player, data in list(PLAYER_RESOLVER.items()):
         if data.get('matcher').search(real_url):
             yield from data.get('extractor', lambda s, u: [])(session, real_url)
             return

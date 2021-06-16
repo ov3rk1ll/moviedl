@@ -9,11 +9,11 @@ current_providers = {
     'twistmoe': {
         'matcher': WATCHSERIES_SLUG,
         'fetcher': watchseries_fetcher,
-    },
+    }
 }
 
 def get_provider(url):
-    for provider, provider_data in current_providers.items():
+    for provider, provider_data in list(current_providers.items()):
         if provider_data.get('matcher').match(url):
             return provider, provider_data
         

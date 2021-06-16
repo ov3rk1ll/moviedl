@@ -4,7 +4,18 @@ def get_check(string):
     if not string:
         return default_check
     
-    return lambda s: s in ["%s:%s" % (int(_), int(e)) for _, e in re.finditer(r"(\d+):(\d+)", string)]
+    def check(s):
+        season, episode = s.split(":")
+        blocks = string.split(" ")
+        for b in blocks:
+            _s, _e = b.split(":")
+            # season must match, episode can be the actual value or X
+            if season == _s and (_e == "X" or episode == _e):
+                return True
+
+        return False
+
+    return check
 
 
 def check_creator(season, episode):
